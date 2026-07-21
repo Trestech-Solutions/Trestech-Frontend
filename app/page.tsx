@@ -2,6 +2,7 @@
 
 import { ArrowRight } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 
 export default function LandingPage() {
   const bars = [45, 65, 35, 80, 60, 90, 50]
@@ -29,9 +30,12 @@ export default function LandingPage() {
             <a href="#" className="hover:text-gray-900 transition-colors">Analytics</a>
             <a href="#" className="hover:text-gray-900 transition-colors">Pricing</a>
           </div>
-          <button className="bg-gray-900 text-white font-semibold text-sm px-5 py-2.5 rounded-lg hover:bg-gray-800 transition-colors">
+          <Link
+            href="/login"
+            className="bg-gray-900 text-white font-semibold text-sm px-5 py-2.5 rounded-lg hover:bg-gray-800 transition-colors"
+          >
             Sign In
-          </button>
+          </Link>
         </div>
       </nav>
 
@@ -51,9 +55,12 @@ export default function LandingPage() {
               Orders, menu, analytics, WhatsApp bot and your website — one dashboard your whole team can run on.
             </p>
             <div className="flex items-center gap-4">
-              <button className="border-2 border-gray-200 text-gray-900 font-semibold px-6 py-3 rounded-lg hover:bg-gray-50 transition-colors">
+              <Link
+                href="/login"
+                className="border-2 border-gray-200 text-gray-900 font-semibold px-6 py-3 rounded-lg hover:bg-gray-50 transition-colors"
+              >
                 Get Started
-              </button>
+              </Link>
               <button className="border-2 border-gray-200 text-gray-900 font-semibold px-6 py-3 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
                 Learn More <ArrowRight size={18} />
               </button>
