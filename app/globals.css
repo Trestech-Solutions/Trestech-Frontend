@@ -1,0 +1,88 @@
+@import 'tailwindcss';
+
+@theme inline {
+  --color-orange: #F59E0B;
+  --color-orange-dark: #EA8C00;
+  --color-ink: #18181B;
+  --color-gray-900: #111827;
+  --color-gray-700: #374151;
+  --color-gray-500: #6B7280;
+  --color-gray-400: #9CA3AF;
+  --color-gray-200: #E5E7EB;
+  --color-gray-100: #F3F4F6;
+  --color-gray-50: #FAFAFA;
+  --color-green: #16A34A;
+  --color-green-bg: #ECFDF3;
+  --color-green-border: #D1FADF;
+  --color-blue: #2563EB;
+  --color-blue-bg: #EFF6FF;
+  --color-blue-border: #DBEAFE;
+  --color-purple: #9333EA;
+  --color-purple-bg: #F5F0FF;
+  --color-amber: #D97706;
+  --color-amber-bg: #FFF7ED;
+  --color-red: #DC2626;
+  --color-red-bg: #FEF2F2;
+  --color-white: #FFFFFF;
+  --color-black: #000000;
+  --color-background: #FAFAFA;
+  --color-foreground: #18181B;
+  --color-card: #FFFFFF;
+  --color-primary: #F59E0B;
+  --color-primary-foreground: #FFFFFF;
+  --color-secondary: #9CA3AF;
+  --color-secondary-foreground: #18181B;
+  --color-muted: #E5E7EB;
+  --color-muted-foreground: #6B7280;
+  --color-accent: #2563EB;
+  --color-accent-foreground: #FFFFFF;
+  --color-border: #E5E7EB;
+  --color-input: #F3F4F6;
+}
+
+:root {
+  color-scheme: light dark;
+  --background: #FAFAFA;
+  --foreground: #18181B;
+  --card: #FFFFFF;
+  --card-foreground: #18181B;
+  --primary: #F59E0B;
+  --primary-foreground: #FFFFFF;
+  --secondary: #9CA3AF;
+  --secondary-foreground: #18181B;
+  --muted: #E5E7EB;
+  --muted-foreground: #6B7280;
+  --accent: #2563EB;
+  --accent-foreground: #FFFFFF;
+  --border: #E5E7EB;
+  --input: #F3F4F6;
+  --radius: 0.5rem;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #111827;
+  --foreground: #F3F4F6;
+  --card: #1F2937;
+  --card-foreground: #F3F4F6;
+  --primary: #F59E0B;
+  --primary-foreground: #111827;
+  --secondary: #6B7280;
+  --secondary-foreground: #F3F4F6;
+  --muted: #374151;
+  --muted-foreground: #9CA3AF;
+  --accent: #2563EB;
+  --accent-foreground: #F3F4F6;
+  --border: #374151;
+  --input: #1F2937;
+  --radius: 0.5rem;
+}
+
+@layer base {
+  html {
+    @apply bg-background;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
