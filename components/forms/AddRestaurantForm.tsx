@@ -4,38 +4,43 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { restaurantSchema, type RestaurantFormData } from '@/lib/schemas/admin-schemas'
 import { X } from 'lucide-react'
+import type { User } from '@/api/types'
 
 interface AddRestaurantFormProps {
   onClose: () => void
   onSubmit: (data: RestaurantFormData) => void
+  isSubmitting?: boolean
+  users?: User[]
+  usersLoading?: boolean
 }
 
-const CHANNELS = ['Web', 'WhatsApp'] as const
-const STATUSES = ['Active', 'Trial', 'Expired'] as const
-
-export function AddRestaurantForm({ onClose, onSubmit }: AddRestaurantFormProps) {
+export function AddRestaurantForm({
+  onClose,
+  onSubmit,
+  isSubmitting = false,
+  users = [],
+  usersLoading = false,
+}: AddRestaurantFormProps) {
   const {
     register,
     handleSubmit,
     control,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<RestaurantFormData>({
     resolver: zodResolver(restaurantSchema),
     defaultValues: {
       name: '',
-      owner: '',
-      branches: 1,
-      commission: 0,
-      expiry: '',
-      channels: [],
-      status: 'Active',
+      email: '',
+      phone: '',
+      address: '',
+      city: '',
+      country: '',
+      owner: null,
     },
   })
 
-  const handleFormSubmit = (data: RestaurantFormData) => {
-    onSubmit(data)
-    onClose()
-  }
+  const field = (name: keyof RestaurantFormData) =>
+    errors[name] ? 'border-red-400 focus:border-red-500 bg-red-50' : 'border-gray-200 focus:border-sky-500'
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
@@ -55,9 +60,11 @@ export function AddRestaurantForm({ onClose, onSubmit }: AddRestaurantFormProps)
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="px-6 py-5 space-y-4 max-h-[75vh] overflow-y-auto">
-
-          {/* Restaurant Name */}
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="px-6 py-5 space-y-4 max-h-[75vh] overflow-y-auto"
+        >
+          {/* Name */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">
               Restaurant Name <span className="text-red-500">*</span>
@@ -65,192 +72,90 @@ export function AddRestaurantForm({ onClose, onSubmit }: AddRestaurantFormProps)
             <input
               {...register('name')}
               placeholder="e.g. Al Madina Grill"
-              className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors ${
-                errors.name
-                  ? 'border-red-400 focus:border-red-500 bg-red-50'
-                  : 'border-gray-200 focus:border-sky-500'
-              }`}
+              className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors ${field('name')}`}
             />
-            {errors.name && (
-              <p className="mt-1 text-xs text-red-500">{errors.name.message}</p>
-            )}
+            {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name.message}</p>}
+          </div>
+
+          {/* Email + Phone */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
+              <input
+                {...register('email')}
+                type="email"
+                placeholder="contact@example.com"
+                className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors ${field('email')}`}
+              />
+              {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Phone</label>
+              <input
+                {...register('phone')}
+                placeholder="e.g. 021-1234567"
+                className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors ${field('phone')}`}
+              />
+              {errors.phone && <p className="mt-1 text-xs text-red-500">{errors.phone.message}</p>}
+            </div>
+          </div>
+
+          {/* Address */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Address</label>
+            <input
+              {...register('address')}
+              placeholder="e.g. 123 Main St"
+              className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors ${field('address')}`}
+            />
+            {errors.address && <p className="mt-1 text-xs text-red-500">{errors.address.message}</p>}
+          </div>
+
+          {/* City + Country */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">City</label>
+              <input
+                {...register('city')}
+                placeholder="e.g. Karachi"
+                className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors ${field('city')}`}
+              />
+              {errors.city && <p className="mt-1 text-xs text-red-500">{errors.city.message}</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Country</label>
+              <input
+                {...register('country')}
+                placeholder="e.g. Pakistan"
+                className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors ${field('country')}`}
+              />
+              {errors.country && <p className="mt-1 text-xs text-red-500">{errors.country.message}</p>}
+            </div>
           </div>
 
           {/* Owner */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-              Owner Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              {...register('owner')}
-              placeholder="e.g. Imran Sheikh"
-              className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors ${
-                errors.owner
-                  ? 'border-red-400 focus:border-red-500 bg-red-50'
-                  : 'border-gray-200 focus:border-sky-500'
-              }`}
-            />
-            {errors.owner && (
-              <p className="mt-1 text-xs text-red-500">{errors.owner.message}</p>
-            )}
-          </div>
-
-          {/* Branches + Commission row */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                Branches <span className="text-red-500">*</span>
-              </label>
-              <Controller
-                name="branches"
-                control={control}
-                render={({ field }) => (
-                  <input
-                    type="number"
-                    min={1}
-                    placeholder="e.g. 4"
-                    value={field.value}
-                    onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                    className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors ${
-                      errors.branches
-                        ? 'border-red-400 focus:border-red-500 bg-red-50'
-                        : 'border-gray-200 focus:border-sky-500'
-                    }`}
-                  />
-                )}
-              />
-              {errors.branches && (
-                <p className="mt-1 text-xs text-red-500">{errors.branches.message}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                Commission (%) <span className="text-red-500">*</span>
-              </label>
-              <Controller
-                name="commission"
-                control={control}
-                render={({ field }) => (
-                  <input
-                    type="number"
-                    step="0.1"
-                    min={0}
-                    max={100}
-                    placeholder="e.g. 5.0"
-                    value={field.value}
-                    onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                    className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors ${
-                      errors.commission
-                        ? 'border-red-400 focus:border-red-500 bg-red-50'
-                        : 'border-gray-200 focus:border-sky-500'
-                    }`}
-                  />
-                )}
-              />
-              {errors.commission && (
-                <p className="mt-1 text-xs text-red-500">{errors.commission.message}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Expiry + Status row */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                Expiry Date <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="date"
-                {...register('expiry')}
-                className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors ${
-                  errors.expiry
-                    ? 'border-red-400 focus:border-red-500 bg-red-50'
-                    : 'border-gray-200 focus:border-sky-500'
-                }`}
-              />
-              {errors.expiry && (
-                <p className="mt-1 text-xs text-red-500">{errors.expiry.message}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                Status <span className="text-red-500">*</span>
-              </label>
-              <Controller
-                name="status"
-                control={control}
-                render={({ field }) => (
-                  <select
-                    value={field.value}
-                    onChange={field.onChange}
-                    className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors bg-white ${
-                      errors.status
-                        ? 'border-red-400 focus:border-red-500 bg-red-50'
-                        : 'border-gray-200 focus:border-sky-500'
-                    }`}
-                  >
-                    {STATUSES.map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                )}
-              />
-              {errors.status && (
-                <p className="mt-1 text-xs text-red-500">{errors.status.message}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Channels */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Channels <span className="text-red-500">*</span>
-            </label>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Owner</label>
             <Controller
-              name="channels"
+              name="owner"
               control={control}
-              render={({ field }) => (
-                <div className="flex gap-3">
-                  {CHANNELS.map((ch) => {
-                    const checked = field.value.includes(ch)
-                    return (
-                      <button
-                        key={ch}
-                        type="button"
-                        onClick={() => {
-                          if (checked) {
-                            field.onChange(field.value.filter((v) => v !== ch))
-                          } else {
-                            field.onChange([...field.value, ch])
-                          }
-                        }}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-all ${
-                          checked
-                            ? ch === 'Web'
-                              ? 'bg-blue-50 border-blue-400 text-blue-700'
-                              : 'bg-sky-50 border-sky-400 text-sky-700'
-                            : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
-                        }`}
-                      >
-                        <span className={`w-4 h-4 rounded border flex items-center justify-center text-white text-xs ${
-                          checked
-                            ? ch === 'Web' ? 'bg-blue-500 border-blue-500' : 'bg-sky-500 border-sky-500'
-                            : 'border-gray-300'
-                        }`}>
-                          {checked && '✓'}
-                        </span>
-                        {ch}
-                      </button>
-                    )
-                  })}
-                </div>
+              render={({ field: f }) => (
+                <select
+                  value={f.value ?? ''}
+                  onChange={(e) => f.onChange(e.target.value ? Number(e.target.value) : null)}
+                  disabled={usersLoading}
+                  className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors bg-white ${field('owner')}`}
+                >
+                  <option value="">— Select an owner (optional) —</option>
+                  {users.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.username} {u.email ? `(${u.email})` : ''}
+                    </option>
+                  ))}
+                </select>
               )}
             />
-            {errors.channels && (
-              <p className="mt-1 text-xs text-red-500">{errors.channels.message}</p>
-            )}
+            {errors.owner && <p className="mt-1 text-xs text-red-500">{errors.owner.message}</p>}
           </div>
 
           {/* Actions */}

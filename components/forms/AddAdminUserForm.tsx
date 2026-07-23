@@ -5,60 +5,61 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { adminUserSchema, type AdminUserFormData } from '@/lib/schemas/admin-schemas'
 import { X, Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
-
-interface Restaurant {
-  id: number
-  name: string
-}
-
-interface Group {
-  id: number
-  name: string
-}
+import type { Role, Group } from '@/api/types'
 
 interface AddAdminUserFormProps {
   onClose: () => void
   onSubmit: (data: AdminUserFormData) => void
-  restaurants: Restaurant[]
-  groups: Group[]
+  isSubmitting?: boolean
+  roles?: Role[]
+  groups?: Group[]
+  rolesLoading?: boolean
+  groupsLoading?: boolean
 }
 
 export function AddAdminUserForm({
   onClose,
   onSubmit,
-  restaurants,
-  groups,
+  isSubmitting = false,
+  roles = [],
+  groups = [],
+  rolesLoading = false,
+  groupsLoading = false,
 }: AddAdminUserFormProps) {
   const [showPassword, setShowPassword] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
 
   const {
     register,
     handleSubmit,
     control,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<AdminUserFormData>({
     resolver: zodResolver(adminUserSchema),
     defaultValues: {
+      username: '',
       email: '',
+      first_name: '',
+      last_name: '',
+      phone: '',
       password: '',
-      role: '',
-      restaurantId: '',
+      password_confirm: '',
+      role: null,
+      group: null,
     },
   })
 
-  const handleFormSubmit = (data: AdminUserFormData) => {
-    onSubmit(data)
-    onClose()
-  }
+  const field = (name: keyof AdminUserFormData) =>
+    errors[name] ? 'border-red-400 focus:border-red-500 bg-red-50' : 'border-gray-200 focus:border-sky-500'
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
+      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
           <div>
             <h2 className="text-lg font-bold text-gray-900">Add User</h2>
-            <p className="text-xs text-gray-500 mt-0.5">Create a new platform user with role and restaurant access</p>
+            <p className="text-xs text-gray-500 mt-0.5">Create a new platform user</p>
           </div>
           <button
             onClick={onClose}
@@ -69,7 +70,23 @@ export function AddAdminUserForm({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="px-6 py-5 space-y-4">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="px-6 py-5 space-y-4 max-h-[75vh] overflow-y-auto"
+        >
+          {/* Username */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              Username <span className="text-red-500">*</span>
+            </label>
+            <input
+              {...register('username')}
+              placeholder="e.g. john_doe"
+              autoComplete="username"
+              className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors ${field('username')}`}
+            />
+            {errors.username && <p className="mt-1 text-xs text-red-500">{errors.username.message}</p>}
+          </div>
 
           {/* Email */}
           <div>
@@ -80,15 +97,40 @@ export function AddAdminUserForm({
               {...register('email')}
               type="email"
               placeholder="user@example.com"
-              className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors ${
-                errors.email
-                  ? 'border-red-400 focus:border-red-500 bg-red-50'
-                  : 'border-gray-200 focus:border-sky-500'
-              }`}
+              autoComplete="email"
+              className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors ${field('email')}`}
             />
-            {errors.email && (
-              <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>
-            )}
+            {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>}
+          </div>
+
+          {/* First name + Last name */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">First Name</label>
+              <input
+                {...register('first_name')}
+                placeholder="e.g. John"
+                className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors ${field('first_name')}`}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Last Name</label>
+              <input
+                {...register('last_name')}
+                placeholder="e.g. Doe"
+                className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors ${field('last_name')}`}
+              />
+            </div>
+          </div>
+
+          {/* Phone */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Phone</label>
+            <input
+              {...register('phone')}
+              placeholder="e.g. 03001234567"
+              className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors ${field('phone')}`}
+            />
           </div>
 
           {/* Password */}
@@ -100,12 +142,9 @@ export function AddAdminUserForm({
               <input
                 {...register('password')}
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Min. 6 characters"
-                className={`w-full px-4 py-2.5 pr-10 border rounded-lg text-sm focus:outline-none transition-colors ${
-                  errors.password
-                    ? 'border-red-400 focus:border-red-500 bg-red-50'
-                    : 'border-gray-200 focus:border-sky-500'
-                }`}
+                placeholder="Min. 8 characters"
+                autoComplete="new-password"
+                className={`w-full px-4 py-2.5 pr-10 border rounded-lg text-sm focus:outline-none transition-colors ${field('password')}`}
               />
               <button
                 type="button"
@@ -115,73 +154,83 @@ export function AddAdminUserForm({
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
-            {errors.password && (
-              <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>
+            {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>}
+          </div>
+
+          {/* Confirm Password */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              Confirm Password <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <input
+                {...register('password_confirm')}
+                type={showConfirm ? 'text' : 'password'}
+                placeholder="Re-enter password"
+                autoComplete="new-password"
+                className={`w-full px-4 py-2.5 pr-10 border rounded-lg text-sm focus:outline-none transition-colors ${field('password_confirm')}`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirm((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            {errors.password_confirm && (
+              <p className="mt-1 text-xs text-red-500">{errors.password_confirm.message}</p>
             )}
           </div>
 
-          {/* Role (Group dropdown) */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-              Role / Group <span className="text-red-500">*</span>
-            </label>
-            <Controller
-              name="role"
-              control={control}
-              render={({ field }) => (
-                <select
-                  value={field.value}
-                  onChange={field.onChange}
-                  className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors bg-white ${
-                    errors.role
-                      ? 'border-red-400 focus:border-red-500 bg-red-50'
-                      : 'border-gray-200 focus:border-sky-500'
-                  }`}
-                >
-                  <option value="">— Select a group —</option>
-                  {groups.map((g) => (
-                    <option key={g.id} value={g.name}>
-                      {g.name}
-                    </option>
-                  ))}
-                </select>
-              )}
-            />
-            {errors.role && (
-              <p className="mt-1 text-xs text-red-500">{errors.role.message}</p>
-            )}
-          </div>
-
-          {/* Restaurant */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-              Assign Restaurant <span className="text-red-500">*</span>
-            </label>
-            <Controller
-              name="restaurantId"
-              control={control}
-              render={({ field }) => (
-                <select
-                  value={field.value}
-                  onChange={field.onChange}
-                  className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors bg-white ${
-                    errors.restaurantId
-                      ? 'border-red-400 focus:border-red-500 bg-red-50'
-                      : 'border-gray-200 focus:border-sky-500'
-                  }`}
-                >
-                  <option value="">— Select a restaurant —</option>
-                  {restaurants.map((r) => (
-                    <option key={r.id} value={String(r.id)}>
-                      {r.name}
-                    </option>
-                  ))}
-                </select>
-              )}
-            />
-            {errors.restaurantId && (
-              <p className="mt-1 text-xs text-red-500">{errors.restaurantId.message}</p>
-            )}
+          {/* Role + Group */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Role</label>
+              <Controller
+                name="role"
+                control={control}
+                render={({ field: f }) => (
+                  <select
+                    value={f.value ?? ''}
+                    onChange={(e) => f.onChange(e.target.value ? Number(e.target.value) : null)}
+                    disabled={rolesLoading}
+                    className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors bg-white ${field('role')}`}
+                  >
+                    <option value="">— None —</option>
+                    {roles.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              />
+              {errors.role && <p className="mt-1 text-xs text-red-500">{errors.role.message}</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Group</label>
+              <Controller
+                name="group"
+                control={control}
+                render={({ field: f }) => (
+                  <select
+                    value={f.value ?? ''}
+                    onChange={(e) => f.onChange(e.target.value ? Number(e.target.value) : null)}
+                    disabled={groupsLoading}
+                    className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors bg-white ${field('group')}`}
+                  >
+                    <option value="">— None —</option>
+                    {groups.map((g) => (
+                      <option key={g.id} value={g.id}>
+                        {g.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              />
+              {errors.group && <p className="mt-1 text-xs text-red-500">{errors.group.message}</p>}
+            </div>
           </div>
 
           {/* Actions */}

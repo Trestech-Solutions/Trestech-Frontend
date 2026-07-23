@@ -1,6 +1,6 @@
 'use client'
 
-import { useForm, Controller } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { masterGroupSchema, type MasterGroupFormData } from '@/lib/schemas/admin-schemas'
 import { X } from 'lucide-react'
@@ -8,28 +8,28 @@ import { X } from 'lucide-react'
 interface AddMasterGroupFormProps {
   onClose: () => void
   onSubmit: (data: MasterGroupFormData) => void
+  isSubmitting?: boolean
 }
 
-export function AddMasterGroupForm({ onClose, onSubmit }: AddMasterGroupFormProps) {
+export function AddMasterGroupForm({
+  onClose,
+  onSubmit,
+  isSubmitting = false,
+}: AddMasterGroupFormProps) {
   const {
     register,
     handleSubmit,
-    control,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<MasterGroupFormData>({
     resolver: zodResolver(masterGroupSchema),
     defaultValues: {
       name: '',
       description: '',
-      masterUsers: 0,
-      restaurantsAssigned: 0,
     },
   })
 
-  const handleFormSubmit = (data: MasterGroupFormData) => {
-    onSubmit(data)
-    onClose()
-  }
+  const field = (name: keyof MasterGroupFormData) =>
+    errors[name] ? 'border-red-400 focus:border-red-500 bg-red-50' : 'border-gray-200 focus:border-sky-500'
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
@@ -49,8 +49,7 @@ export function AddMasterGroupForm({ onClose, onSubmit }: AddMasterGroupFormProp
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="px-6 py-5 space-y-4">
-
+        <form onSubmit={handleSubmit(onSubmit)} className="px-6 py-5 space-y-4">
           {/* Group Name */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">
@@ -58,101 +57,24 @@ export function AddMasterGroupForm({ onClose, onSubmit }: AddMasterGroupFormProp
             </label>
             <input
               {...register('name')}
-              placeholder="e.g. Regional managers"
-              className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors ${
-                errors.name
-                  ? 'border-red-400 focus:border-red-500 bg-red-50'
-                  : 'border-gray-200 focus:border-sky-500'
-              }`}
+              placeholder="e.g. Regional Managers"
+              className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors ${field('name')}`}
             />
-            {errors.name && (
-              <p className="mt-1 text-xs text-red-500">{errors.name.message}</p>
-            )}
+            {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name.message}</p>}
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-              Description <span className="text-red-500">*</span>
-            </label>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Description</label>
             <textarea
               {...register('description')}
               rows={3}
               placeholder="e.g. Manage restaurants by region"
-              className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors resize-none ${
-                errors.description
-                  ? 'border-red-400 focus:border-red-500 bg-red-50'
-                  : 'border-gray-200 focus:border-sky-500'
-              }`}
+              className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors resize-none ${field('description')}`}
             />
             {errors.description && (
               <p className="mt-1 text-xs text-red-500">{errors.description.message}</p>
             )}
-          </div>
-
-          {/* Master Users + Restaurants Assigned */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                Master Users
-              </label>
-              <Controller
-                name="masterUsers"
-                control={control}
-                render={({ field }) => (
-                  <input
-                    type="number"
-                    min={0}
-                    placeholder="e.g. 3"
-                    value={field.value}
-                    onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                    className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors ${
-                      errors.masterUsers
-                        ? 'border-red-400 focus:border-red-500 bg-red-50'
-                        : 'border-gray-200 focus:border-sky-500'
-                    }`}
-                  />
-                )}
-              />
-              {errors.masterUsers && (
-                <p className="mt-1 text-xs text-red-500">{errors.masterUsers.message}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                Restaurants Assigned
-              </label>
-              <Controller
-                name="restaurantsAssigned"
-                control={control}
-                render={({ field }) => (
-                  <input
-                    type="number"
-                    min={0}
-                    placeholder="e.g. 128"
-                    value={field.value}
-                    onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                    className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none transition-colors ${
-                      errors.restaurantsAssigned
-                        ? 'border-red-400 focus:border-red-500 bg-red-50'
-                        : 'border-gray-200 focus:border-sky-500'
-                    }`}
-                  />
-                )}
-              />
-              {errors.restaurantsAssigned && (
-                <p className="mt-1 text-xs text-red-500">{errors.restaurantsAssigned.message}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Info note */}
-          <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-lg px-4 py-3">
-            <span className="text-blue-500 text-xs mt-0.5">ℹ️</span>
-            <p className="text-xs text-blue-700">
-              Created date will be set automatically to today. You can assign specific permissions after creation.
-            </p>
           </div>
 
           {/* Actions */}
